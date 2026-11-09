@@ -1,0 +1,6 @@
+mysqlclient
+sockets
+redis
+pandas
+Cython
+scipy
