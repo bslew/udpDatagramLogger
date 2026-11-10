@@ -13,6 +13,64 @@ from UdpLogger.communication import config_file
 from UdpLogger import logger
 from UdpLogger.common import commons
 
+def ensure_mlflow_experiment(experiment_name):
+    import mlflow
+    from mlflow.entities import ViewType
+    from mlflow.tracking import MlflowClient
+
+    client = MlflowClient()
+    experiment = client.get_experiment_by_name(experiment_name)
+    if experiment is not None:
+        if experiment.lifecycle_stage == "deleted":
+            client.restore_experiment(experiment.experiment_id)
+        return client.get_experiment(experiment.experiment_id)
+
+    for experiment in client.search_experiments(view_type=ViewType.DELETED_ONLY):
+        if experiment.name == experiment_name:
+            client.restore_experiment(experiment.experiment_id)
+            return client.get_experiment(experiment.experiment_id)
+
+    experiment_id = client.create_experiment(experiment_name)
+    return client.get_experiment(experiment_id)
+
+
+def save_to_mlflow(mlflow_con, data_dict, logger=None):
+    '''
+    save dictionary key and values to mlflow server
+    
+    parameters
+    ----------
+        mlflow_con - dictionary {
+            'host' : mlflow host, 
+            'port' : mlflow port,
+            'experiment_name' : mlflow experiment name,
+            'run_name' : mlflow run name,
+            'tags' : dictionary with tags} 
+        data_dict - dict to be saved
+    '''
+    import mlflow
+    import mlflow.tracking
+    mlflow.set_tracking_uri("http://{}:{}".format(mlflow_con['host'],mlflow_con['port']))
+    experiment = ensure_mlflow_experiment(mlflow_con['experiment_name'])
+
+    timestamp = int(datetime.datetime.utcnow().timestamp()*1000)
+    # print(data_dict)
+    def log_metrics():
+        for k,v in data_dict.items():
+            try:
+                v=float(v)
+            except (ValueError, TypeError):
+                continue
+            if isinstance(v,(int,float)):
+                mlflow.log_metric(k,v, step=0, timestamp=timestamp)
+
+    if mlflow.active_run() is not None:
+        log_metrics()
+        return
+
+    with mlflow.start_run(experiment_id=experiment.experiment_id,
+                          run_name=mlflow_con['run_name'], tags=mlflow_con['tags']):
+        log_metrics()
 
 def save_to_redis(rcon, data_dict,logger=None):
     '''

@@ -4,3 +4,5 @@ redis
 pandas
 Cython
 scipy
+mlflow
+setuptools

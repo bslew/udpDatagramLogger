@@ -15,29 +15,20 @@ configFile=os.environ['HOME']+os.sep+'.udpDatagramLogger.ini'
 def writeConfigFile(configFile):
     config = configparser.ConfigParser()
     print('Generating config file')
-    config['ELECTRIC_CABIN_DATA'] = {
+    config['ExperimentName'] = {
         'udp_port' : 33051, 
         'udp_ip' : '192.168.1.255',
-        'required_keys' : json.dumps('["T_electric", "RH_electric"]'),
-        'db_keys' : json.dumps('["T", "RH"]'),
-        'table' : 'electric_cabin',
-        'saveToDB' : True,
-    }
-
-    config['FOCUS_CABIN_DATA'] = {
-        'udp_port' : 33060, 
-        'udp_ip' : '192.168.1.255',
-        'required_keys' : json.dumps('["T_focB", "P_focB", "RH_focB"]'),
-        'db_keys' : json.dumps('["T", "P", "RH"]'),
-        'table' : 'focus_cabin',
+        'required_keys' : json.dumps('["Key1", "Key2"]'),
+        'key_mapping' : json.dumps('["sql_column_for_key1", "sql_column_for_key2"]'),
+        'table' : 'sql_table_name',
         'saveToDB' : True,
     }
     
     config['DB'] = {'host' : '192.168.1.8',
                     'port' : 3306,
-                    'user' : 'kra', 
+                    'user' : 'userName', 
                     'passwd' : 'passwd',
-                    'db' : 'kra',
+                    'db' : 'dbName',
                  }
     
     config['CONFIG_FILE']=configFile
@@ -52,8 +43,8 @@ def writeConfigFile(configFile):
 class udpDatagramLoggerParser(configparser.ConfigParser):
     def __init__(self):
         super().__init__()
-#         list_keys=['db_keys']
-        self.set('DEFAULT','db_keys',json.dumps('[]'))
+#         list_keys=['key_mapping']
+        self.set('DEFAULT','key_mapping',json.dumps('[]'))
         self.set('DEFAULT','saveToRedis','False')
         self.set('DEFAULT','saveToDB','False')
         self.set('DEFAULT','saveToFile','False')

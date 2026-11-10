@@ -29,16 +29,6 @@ for runs started without installing the package
 sys.path.append(os.sep.join(os.path.abspath(__file__).split(os.sep)[:-2]))  
 sys.path.append(os.sep.join(os.path.abspath(__file__).split(os.sep)[:-1]))  
 
-from argparse import ArgumentParser
-from argparse import RawDescriptionHelpFormatter
-
-# from UdpLogger.communication import config_file
-# from UdpLogger.communication import UDPdatagrams
-# 
-# from UdpLogger.database import storage
-# from UdpLogger import logger, server
-# from UdpLogger.common import commons
-
 import UdpLogger
         
 __all__ = []
@@ -125,6 +115,7 @@ USAGE
         args.saveToDB=UdpLogger.common.commons.str2bool(UdpLogger.communication.config_file.getOption('saveToDB', cfg,moduleSection,args.saveToDB))
         args.saveToFile=UdpLogger.common.commons.str2bool(UdpLogger.communication.config_file.getOption('saveToFile', cfg,moduleSection,args.saveToFile))
         args.saveToRedis=UdpLogger.common.commons.str2bool(UdpLogger.communication.config_file.getOption('saveToRedis', cfg,moduleSection,args.saveToRedis))
+        args.saveToMlFlow=UdpLogger.common.commons.str2bool(UdpLogger.communication.config_file.getOption('saveToMlFlow', cfg,moduleSection,args.saveToMlFlow))
 
         if verbose > 1:
             log.debug("Verbose mode on")
@@ -132,8 +123,7 @@ USAGE
 #             log.debug("will save to DB: {}".format(saveToDB))
             log.debug("args.saveToFile: {}".format(args.saveToFile))
             log.debug("args.saveToRedis: {}".format(args.saveToRedis))
-
-
+            log.debug("args.saveToMlFlow: {}".format(args.saveToMlFlow))
 
         if args.setup:
             cfg=None
@@ -141,7 +131,7 @@ USAGE
                 log.warning('Config file ({}) already exists. Will not overwrite.'.format(UdpLogger.communication.config_file.configFile))
                 log.warning('Remove config file manually and run this program again if you want to start a fresh config file.')
                 cfg=UdpLogger.communication.config_file.readConfigFile(args.config_file)
-                db_keys=cfg.getlist(program_module_name,'db_keys')
+                key_mapping=cfg.getlist(program_module_name,'key_mapping')
 
                 if args.saveToDB:
                     log.info("Configuring DB table")
@@ -150,7 +140,7 @@ USAGE
                         dbname=cfg['DB']['db'],table=cfg[moduleSection]['table'],
                         user=cfg['DB']['user'],
                         passwd=cfg['DB']['passwd'],
-                        cols=json.loads(cfg[program_module_name]['db_keys']),
+                        cols=json.loads(cfg[program_module_name]['key_mapping']),
                         logger=log,
                         )
                     db.connect()
@@ -167,7 +157,7 @@ USAGE
                         
         if args.serverUDP:
 #             keys={'required' : json.loads(cfg[program_module_name]['required_keys']), 
-#                   'target' : json.loads(cfg[program_module_name]['db_keys'])}
+#                   'target' : json.loads(cfg[program_module_name]['key_mapping'])}
 #             assert(len(keys['required']==len(keys['target'])))
 #             server.startServerUDP(cfg, moduleSection, args, storage.FocusBoxMeteo_sqldb,UDPdatagrams.convert_UDP_datagram_focus_cabin,keys,log)
             UdpLogger.server.startServerUDP(cfg, moduleSection, args, 

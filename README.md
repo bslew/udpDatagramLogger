@@ -23,6 +23,10 @@ expressions.
 ```sh
 git clone https://github.com/bslew/udpDatagramLogger.git
 ```
+# Install required packages
+```sh
+apt install libmysqlclient-dev/noble-updates libmysqlclient21/noble-updates python3-mysqldb/noble
+```
 
 # Build & Install
 ```sh
@@ -74,7 +78,7 @@ and has the following structure
 	
 	# The datagram keys are mapped to mysql table column names as
 	# (these names are also used for redis)
-	db_keys = ["T","RH", "P"]
+	key_mapping = ["T","RH", "P"]
 	
 	# If output to redis database is also requested then
 	saveToRedis = True
@@ -134,8 +138,8 @@ Suppose the incoming datagrams have format:
 2021 9 28 10 31 41 888523 2000.000 2459485.938679 271 44139.483510 -24.9975 0.0007 183.9150 53.0948 0 1 -0.0100 0.0100 0.0000 0.0000 -0 -0 -0 0 70 0 0 0 0 0 0 -25.0000 0.0000 344.2920 62.1476 13415
 ```
 and arrive several times per second.
-We wish to extract julian day (the 9'th word), ammed it with
-apropriate key - "JD" and average the incoming UDP stream
+We wish to extract julian day (the 9'th word), amend it with
+an apropriate key - "JD" and average the incoming UDP stream
 in timescales of 2 seconds and redistribute it to another port.
 This can be done using the following configuration block:
 
@@ -163,13 +167,13 @@ required_keys = ["JD"]
 # Define how these keys should be mapped - i.e. specify their
 # target names
 # (these names are also used for mySQL and redis if used)
-db_keys = ["JD"]
+key_mapping = ["JD"]
 
 # If output to redis database is also requested then uncomment
 #saveToRedis = True
 
 # Finally, perform 2-s averaging of the preprocessed input and 
-# resubmit the input to a different host and port
+# resubmit the output to a different host and port
 averaging_interval=2
 resend_output_to_host=127.0.0.1
 resend_output_to_port=10000
@@ -181,7 +185,7 @@ resend_output_to_port=10000
 # JD=2459485.962054424,dt=2021-09-28 11:05:21.717967,
 # 
 # and will be emitted roughly every two seconds as requested.
-# Each datagram of the package is ammended with additional
+# Each datagram of the package is amended with additional
 # dt key that contains UTC date and time of the UDP datagram
 # arrival (or as in this case the mean date and time calculated
 # over dates and times of all datagrams that came within the 
@@ -223,7 +227,7 @@ required_keys = ["AZtrue","ZDtrue"]
 
 # The datagram keys are mapped to mysql table column names as
 # (these names are also used for redis)
-db_keys = ["AZtrue","ZDtrue"]
+key_mapping = ["AZtrue","ZDtrue"]
 
 # The key names can be prefixed using namespace 
 # redisNamespace = rt4_control
@@ -270,7 +274,7 @@ required_keys = ["T"]
 
 # The datagram keys are mapped to mysql table column names as
 # (these names are also used for redis)
-db_keys = ["T"]
+key_mapping = ["T"]
 
 alarm_on = [ ["T", ">", "30" ], ["T", "<", "15" ] ]
 alarm_email= ["xxx@yyy.zzz"]
